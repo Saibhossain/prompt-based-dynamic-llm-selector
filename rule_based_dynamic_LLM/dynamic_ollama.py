@@ -1,4 +1,4 @@
-import subprocess
+from ollama import chat
 
 Model = {
     "small": "gemma3:1b",
@@ -17,26 +17,18 @@ def analyze_prompt(prompt:str) -> str:
     else:
         return "large"
 
-def query_ollama_model(model_name: str , prompt: str ) -> str:
-    try:
-        result = subprocess.run(
-            ["ollama", "run", model_name, "--prompt", prompt],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        return f"Error calling model: {e}"
-
-
 def dynamic_llm(prompt: str) -> str:
     model_size = analyze_prompt(prompt)
     model_name = Model[model_size]
     print(f"Selected model: {model_name}")
-    response = query_ollama_model(model_name, prompt)
-    return response
 
+    response = chat(
+        model=model_name,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.message.content
 
 if __name__ == "__main__":
     user_prompt = input("Enter your prompt: ")
